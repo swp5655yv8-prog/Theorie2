@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Muziektheorie oefenplatform – MT 2de jaar</title>
+<style>
+:root{--bg:#eef1f8;--card:#fff;--ink:#151b33;--mut:#5b6384;--line:#d9deee;--pri:#4338ca;--pri2:#e4e2fb;--ok:#0d8a7e;--okbg:#dcf5f1;--bad:#d1294f;--badbg:#fde4ea;--amb:#b86e00;color-scheme:light}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1224;--card:#1a1e38;--ink:#eceefb;--mut:#9aa2c8;--line:#2d3358;--pri:#9ea0ff;--pri2:#2a2d5c;--ok:#4fd1c0;--okbg:#12363a;--bad:#ff7d9a;--badbg:#42182a;--amb:#f5b445;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 'Avenir Next','Segoe UI',system-ui,sans-serif}
+header{background:#151b33;color:#fff;padding:22px 20px 0;position:relative}
+header div.in{max-width:900px;margin:auto;padding-bottom:18px}
+h1{font:700 clamp(1.5rem,4vw,2.2rem)/1.15 Georgia,'Times New Roman',serif;margin:0 0 4px}
+header p{margin:0;color:#b9c0e6}
+.keys{height:26px;background:
+ linear-gradient(90deg,transparent 0 5.2%,#151b33 5.2% 8.6%,transparent 8.6% 100%) 0 0/14.28% 62% no-repeat,
+ repeating-linear-gradient(90deg,#fff 0 calc(100%/14 - 2px),#9aa2c8 calc(100%/14 - 2px) calc(100%/14))}
+.keys{background:repeating-linear-gradient(90deg,#f7f8fd 0 calc(100%/21 - 2px),#8c94bd calc(100%/21 - 2px) calc(100%/21));position:relative}
+.keys i{position:absolute;top:0;width:2.4%;height:62%;background:#151b33;border-radius:0 0 3px 3px}
+main{max-width:900px;margin:auto;padding:22px 16px 60px}
+h2{font:700 1.25rem Georgia,serif;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.t{display:block;background:var(--card);border:2px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer}
+.t:has(input:checked){border-color:var(--pri);background:var(--pri2)}
+.t:has(input:focus-visible){outline:3px solid var(--pri);outline-offset:2px}
+.t input{position:absolute;opacity:0}
+.t b{display:block}.t small{color:var(--mut)}
+.bar{height:7px;border-radius:4px;background:var(--line);margin:8px 0 3px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--ok);border-radius:4px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:18px 0}
+button{font:inherit;cursor:pointer;border-radius:10px;border:2px solid var(--line);background:var(--card);color:var(--ink);padding:9px 16px}
+button:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+button.p{background:var(--pri);border-color:var(--pri);color:#fff;font-weight:600}
+@media(prefers-color-scheme:dark){button.p{color:#0f1224}}
+button.w{border-color:var(--amb);color:var(--amb);font-weight:600}
+button.c.on{background:var(--pri2);border-color:var(--pri);font-weight:600}
+button:disabled{opacity:.45;cursor:default}
+.lnk{background:none;border:0;color:var(--mut);text-decoration:underline;padding:4px}
+.box{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:20px}
+.prog{display:flex;gap:3px;margin-bottom:16px}
+.prog i{flex:1;height:10px;border-radius:0 0 4px 4px;background:var(--line)}
+.prog i.d{background:var(--ok)}.prog i.x{background:var(--bad)}.prog i.n{background:var(--pri)}
+.tag{display:inline-block;font-size:.85rem;color:var(--mut);margin-bottom:6px}
+.q{font:600 1.2rem/1.4 Georgia,serif;margin:0 0 16px}
+.o{display:block;width:100%;text-align:left;margin:8px 0;padding:12px 14px}
+.o:hover:not(:disabled){border-color:var(--pri)}
+.o.ok{background:var(--okbg);border-color:var(--ok)}.o.no{background:var(--badbg);border-color:var(--bad)}
+.o:disabled{opacity:1;cursor:default}
+.fb{margin-top:14px;padding:12px 14px;border-radius:10px}
+.fb.ok{background:var(--okbg)}.fb.no{background:var(--badbg)}
+.box button{margin:4px 6px 0 0}select{font:inherit;padding:4px 8px;border-radius:8px;border:2px solid var(--line);background:var(--card);color:var(--ink)}
+.score{font:700 3rem Georgia,serif;margin:0}
+.rt{display:grid;grid-template-columns:minmax(120px,220px) 1fr 50px;gap:10px;align-items:center;margin:6px 0}
+@media(max-width:520px){.rt{grid-template-columns:1fr 60px}.rt .bar{grid-column:1/3;order:3}}
+</style>
+</head>
+<body>
+<header><div class="in"><h1>Muziektheorie oefenplatform</h1><p>Lessen MT JPR 2de jaar · oefen wat je wilt, werk aan wat nog moeilijk is · met gehoortraining 🎧</p></div><div class="keys" id="keys"></div></header>
+<main id="app"></main>
+<script>
+const N='C Db D Eb E F Gb G Ab A Bb B'.split(' ');
+const KS={C:'C D E F G A B',G:'G A B C D E F#',D:'D E F# G A B C#',A:'A B C# D E F# G#',F:'F G A Bb C D E',Bb:'Bb C D Eb F G A',Eb:'Eb F G Ab Bb C D'};
+for(const k in KS)KS[k]=KS[k].split(' ');
+const MO=['ionisch','dorisch','frygisch','lydisch','mixolydisch','aeolisch','locrisch'];
+const T={tk:['Tonale kaart & IFR','🗺️'],bd:['Backdoor progression','🚪'],sd:['Secundaire dominanten','⚡'],ss:['Secundaire subdominanten (II–V)','🔀'],tn:['Tensions & upper structures','🎨'],md:['Modi','🌈'],mm:['Mineur harmonisch & melodisch','🌙'],ts:['Tritonussubstitutie','🔁'],dm:['Verminderd akkoord','🔷'],ag:['Vermeerderd akkoord','🔶'],cd:['Cadenzen','🎵']};
+const sh=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const pick=(a,n=1)=>sh(a).slice(0,n);
+const Q=(t,id,q,r,w,why,snd,k=3)=>{const o=sh([r,...pick([...new Set(w)].filter(x=>x!==r),k)]);return{t,id,q,o,a:o.indexOf(r),why,snd}};
+
+// ---- Vaste vragen: onderwerp ~ vraag ~ juist ~ 3 fout ~ uitleg
+const S=`tk~Hoe noteer je de zevende graad in de IFR-tonale kaart?~7-b5~7D~7-~7+~De zevende graad is een halfverminderd akkoord: 7-b5.
+tk~Wat betekent 5D in de IFR-notatie?~Dominant septiemakkoord op de 5e graad~Vijfde graad mineur~Vijfde graad verminderd~Vijfde graad majeur7~De D staat voor dominant.
+tk~Hoe noteer je de 2e en de 3e graad van de majeurreeks?~2- en 3-~2D en 3D~2 en 3~2+ en 3+~Het zijn mineur7-akkoorden; het streepje staat voor mineur.
+tk~Wat doe je bij 'Sing The Numbers'?~Al zingend de omcirkelde akkoordnoten verbinden~Enkel de grondnoten zingen~De toonladder van 1 tot 8 zingen~Het schema uit het hoofd noteren~Je volgt de weg door het schema via de omcirkelde noten.
+tk~Wat toont een tonale kaart?~De weg doorheen een akkoordenschema~De kwintencirkel~Alle mogelijke modulaties~De ritmische structuur~De majeurreeks wordt verticaal gestapeld met omcirkelde akkoordnoten.
+bd~Wat is een backdoor progression?~Een dominant op bVII (uit de parallelle mineur) dat naar de tonica oplost~Een dominant op de 5e graad dat naar vi oplost~Een tritonussubstitutie van de 2e graad~Een mineurakkoord op bIII dat naar V gaat~Het dominant ligt een hele toon onder de tonica in plaats van op de gebruikelijke 5e graad.
+bd~Welke analysenotatie hoort bij de backdoor progression?~bVII7 / I~V7 / I~bII7 / I~VII7 / I~bVII7 is het backdoor-dominant dat naar I oplost.
+bd~Fm7 – Bb7 – Cmaj7 in C majeur is een…~ivmin – bVII7 – Imaj~ii – V – I~IV – V – I~vi – II7 – V~Bb7 is bVII7 en lost op naar C. Voorbeeld: 'Aunt Leslie' (Vulfpeck).
+bd~Welke backdoor-progressie gebruikt '10cc – I Wanna Rule The World'?~bVImaj – bVII7 – Imaj~ivmin – bVII7 – Imaj~ii – V – I~I – V – vi – IV~Abmaj7 – Bb7 – Cmaj7 in C majeur.
+bd~Waar ligt het backdoor-dominant ten opzichte van de tonica?~Een hele toon lager~Een kwint hoger~Een kleine terts hoger~Een halve toon lager~Het dominant ligt een toon onder de tonica en lost daarnaar op.
+sd~Hoe noem je een dominantakkoord dat niet de V van de diatonische reeks is?~Secundaire dominant~Primaire dominant~Backdoor subdominant~Modaal akkoord~Elke graad kan een schijnbare nieuwe tonica worden.
+sd~A7 in C majeur verschilt maar in één noot van Am7. Welke?~De terts (C# i.p.v. C)~De kwint~De septiem~De grondnoot~De C# is een leidtoon (chromatiek) naar D, het volgende akkoord.
+sd~Welke secundaire dominant komt het vaakst voor?~3D (lost op naar 6-)~1D~2D~7D~3D → 6- zit in veel popnummers.
+sd~Waarom heeft 1D in de IFR-tabel geen kruis?~Er is al een natuurlijke halve toon tussen 3 en 4~1D bestaat niet~De grondtoon wordt nooit verhoogd~Het is een mineurakkoord~Tussen 3 en 4 zit al een halve toon.
+sd~Wat is een dominantenketting?~Dominanten die op elkaar oplossen volgens de kwintencirkel (tegenwijzerzin)~Vier tonicaakkoorden na elkaar~Dominanten die een halve toon stijgen~Een ketting van tritonussubstituties~Voorbeelden: Spinning Wheel, bridge van I've Got Rhythm.
+sd~Welke koppeling klopt in de IFR-notatie?~3D → 6-~3D → 4~6D → 5~1D → 2-~Anderen: 6D → 2-, 5D → 1, 1D → 4, 7D → 3-.
+sd~Waarom heeft 7D twee kruisen?~De #2 vormt de leidtoon naar 3-~Omdat 7 altijd verhoogd wordt~Omdat het een verminderd akkoord is~Omdat het naar 1 oplost~De #2 is de leidtoon naar de 3-.
+ss~Welke functie hebben ii en IV in majeur?~Subdominant~Tonica~Dominant~Geen functie~ii en IV hebben een subdominantfunctie.
+ss~Welke graden hebben tonicafunctie in majeur?~I, iii en vi~I, IV en V~ii, IV en vi~I, iii en V~I, iii en vi zijn tonica.
+ss~Welke graden hebben dominantfunctie in majeur?~V en vii~I en iii~ii en IV~IV en vi~V en vii.
+ss~Wat is de onstabiele noot in een majeurtonaliteit?~De kwart~De sext~De terts~De kwint~De leidtoon is de grote septiem.
+ss~Wat is de onstabiele noot in een mineurtonaliteit?~De sext~De kwart~De septiem~De kwint~In mineur is er geen leidtoon.
+ss~Welke graden hebben subdominantfunctie in mineur?~ii, iv, VI en VII~i, III en v~V en vii~i, iv en v~i, III en v zijn tonica.
+ss~In C majeur: Gm7 – C7 – Fmaj7. Wat is Gm7?~Een secundair subdominantakkoord~Een primair dominant~Een tritonussubstitutie~Een backdoor-akkoord~We denken even in F majeur: Gm7 is daar de ii.
+ss~Wat is de populairste akkoordenprogressie?~IIm7 – V7 – Imaj7 (jazz cadens)~I – IV – V~I – vi – IV – V~Imaj7 – bVII7 – ivm7~De jazz cadens.
+ss~Hoe noteer je in IFR de II–V naar de 4e graad?~5mi – 1D → 4~4mi – 7D → 4~6mi – 2D → 4~3mi7 – 6D → 4~Naar de 4 gaat 5mi | 1D.
+tn~Welke graden komen overeen met de 9, 11 en 13?~Secunde, kwart en sext~Terts, kwint en septiem~Secunde, terts en kwint~Kwart, kwint en septiem~Door tertsen te stapelen krijg je de zeven noten van de toonladder.
+tn~Welke tensions kleuren een majeurakkoord vlot?~9 en/of 13~11~b9~b13~De 11 klinkt dissonant en wordt #11.
+tn~Wat doe je met de 11 op een majeurakkoord?~Een halve toon verhogen (#11)~Een halve toon verlagen (b11)~Weglaten~Verdubbelen~Cmaj7(#11).
+tn~Welke tension past vooral op een halfverminderd akkoord (mi7b5)?~11~9~13~#9~Vooral de 11.
+tn~Welk mineurakkoord uit majeur krijgt een gewone 13?~Het akkoord op de 2e graad~Het akkoord op de 3e graad~Het akkoord op de 6e graad~Het akkoord op de 7e graad~Op de 3e of 6e graad gebruik je b13.
+tn~Welke tensions gebruik je op het dominantakkoord op iv van melodisch mineur?~9, #11 en 13~b9, #9 en b13~b9 en 11~11 en b13~De toonladder is lydo-mixolydisch.
+tn~Welke toonladder hoort bij C7#11 (dominant op iv van melodisch mineur)?~Lydo-mixolydisch~Dorisch~Frygisch~Locrisch~Lydo-mixolydisch combineert lydisch en mixolydisch.
+tn~Een dominant lost op naar een mineurakkoord. Welk akkoord gebruik je meestal?~Een 7alt-akkoord~Een maj7-akkoord~Een gewoon V-akkoord zonder tensions~Een vermeerderd majeur7-akkoord~7alt bevat alle alteraties tegelijk.
+tn~Uit welke noten is Eb9 opgebouwd?~Eb – G – Bb – Db – F~Eb – G – Bb – D – F~Eb – Gb – Bb – Db – F~Eb – G – Bb – Db – Fb~Grondnoot, terts, kwint, kleine septiem en 9.
+tn~Uit welke noten is A7#9 opgebouwd?~A – C# – E – G – B#~A – C# – E – G – B~A – C# – E – G# – B#~A – C – E – G – B~De #9 is een verhoogde secunde: B# (= C).
+tn~Uit welke noten is DMaj13 opgebouwd?~D – F# – A – C# – E – B~D – F# – A – C – E – B~D – F# – A – C# – E – Bb~D – F# – A – C# – E – G~Maj7 (C#), 9 (E) en 13 (B).
+tn~Uit welke noten is Fmi11 opgebouwd?~F – Ab – C – Eb – G – Bb~F – Ab – C – Eb – G – B~F – A – C – Eb – G – Bb~F – Ab – C – E – G – Bb~Mineur7 met 9 (G) en 11 (Bb).
+md~Welke modus klinkt 'heel donker' (Björk – Army Of Me)?~Locrisch~Dorisch~Lydisch~Mixolydisch~Locrisch is de donkerste modus.
+md~Welke modus past bij flamenco en 'Egyptische' klanken?~Frygisch~Lydisch~Ionisch~Aeolisch~Frygisch: 3 4 5 6 7 1 2.
+md~Welke modus klinkt heroïsch en speels (The Simpsons Theme, Jurassic Park)?~Lydisch~Dorisch~Frygisch~Aeolisch~Lydisch heeft een #4.
+md~Welke modus hoor je in 'You Really Got Me' (The Kinks) en rock/blues/country?~Mixolydisch~Lydisch~Locrisch~Frygisch~Mixolydisch heeft een b7.
+md~Welke modus gebruikt Miles Davis in 'So What'?~Dorisch~Frygisch~Lydisch~Locrisch~Dorisch is hoopvol-triest en funky (ook Uptown Funk).
+md~Welke modus heeft b2, b3, b5, b6 en b7?~Locrisch~Frygisch~Aeolisch~Dorisch~Locrisch: 1 b2 b3 4 b5 b6 b7.
+md~Welke modus heeft b3, b6 en b7 (de natuurlijke mineur)?~Aeolisch~Dorisch~Frygisch~Locrisch~Aeolisch begint op de 6e graad.
+md~Welke modus heeft alleen een b3 en b7 t.o.v. majeur?~Dorisch~Mixolydisch~Aeolisch~Frygisch~Dorisch: 1 2 b3 4 5 6 b7.
+md~Wat is kenmerkend voor modale harmonie?~Een tooncentrum met akkoorden uit de modus; kleur boven spanning~Voortdurend dominant–tonica-spanning~Steeds moduleren naar nieuwe toonaarden~Alleen akkoorden uit de harmonische mineur~Vaak statisch, met lange pedaalnoten.
+md~Wie bracht in 1953 het Lydian Chromatic Concept uit?~George Russell~Miles Davis~John Coltrane~Bill Evans~Zijn systeem baande de weg voor modaal componeren.
+mm~Hoe verschilt de melodische mineur van de majeurtoonladder?~Alleen de terts is klein (b3)~Alleen de septiem is klein~Alleen de sext is klein~Terts en sext zijn klein~Eén noot: de terts.
+mm~Waarom klinkt de harmonische mineur 'oosters'?~Door de overmatige secunde tussen b6 en 7~Door de tritonus tussen 1 en 5~Door de kleine secunde tussen 1 en 2~Door de verhoogde kwart~Halve toon, kleine terts, halve toon.
+mm~Welk akkoord staat op de iv van de melodische mineur?~Dominant septiemakkoord~Mineur septiemakkoord~Halfverminderd akkoord~Majeur septiemakkoord~Het is een 7#11-akkoord (lydo-mixolydisch).
+mm~Welk akkoord staat op de vi van de melodische mineur?~Halfverminderd (m7b5)~Dominant septiem~Verminderd (dim7)~Maj7~Voorbeeld in A: F#m7b5.
+mm~Welk akkoord staat op de bIII van de melodische mineur?~Maj7 met verhoogde kwint (Maj7#5)~Mineur7~Dominant 7~Verminderd~Voorbeeld in A: Cmaj7(#5).
+mm~Welk akkoord staat op de i van de melodische mineur?~mMaj7~m7~m7b5~Maj7#5~Voorbeeld: Am(maj7).
+mm~Welke vierklank staat op de 7e graad van de harmonische mineur?~Verminderd (°7)~m7b5~Dominant 7~Maj7~Zo vind je verminderde akkoorden terug in de harmonische mineur.
+ts~Tussen welke akkoordnoten van een dominant zit de tritonus?~Tussen terts en septiem~Tussen grondnoot en kwint~Tussen grondnoot en terts~Tussen kwint en septiem~Die tritonus zorgt voor de spanning.
+ts~Wat blijft behouden bij een tritonussubstitutie?~De tritonus (terts en septiem)~De grondnoot~De kwint~De kwart~De noten van de tritonus worden omgedraaid.
+ts~Dm7 – G7 – Cmaj7 met tritonussubstitutie wordt…~Dm7 – Db7 – Cmaj7~Dm7 – Ab7 – Cmaj7~Dm7 – Gb7 – Cmaj7~Dm7 – D7 – Cmaj7~Je krijgt een chromatisch dalende baslijn.
+ts~Met welke tension kleur je een subV (bv. Db7)?~#11~b9~b13~11~Db7#11 (#11 = G).
+dm~Hoe is een verminderd akkoord opgebouwd?~Kleine tertsen (3 halve tonen) stapelen~Grote tertsen stapelen~Een grote en een kleine terts~Kwarten stapelen~Alleen kleine tertsen.
+dm~Hoeveel verschillende verminderde akkoorden bestaan er?~3~4~6~12~Co = Ebo = Gbo = Ao enzovoort.
+dm~Welk patroon heeft de verminderde toonladder?~Hele toon – halve toon (afwisselend)~Halve toon – hele toon – hele toon~Alleen hele tonen~Alleen halve tonen~C D Eb F Gb Ab Bbb B.
+dm~Waar gebruik je een verminderd akkoord vaak?~Tussen twee diatonische graden een hele toon uit elkaar~Enkel op de 5e graad van majeur~Alleen als slotakkoord~Altijd vóór een dominant~Ook: een hele toon lager naar een mineurakkoord, en als 2e graad in een mineur jazz cadens.
+dm~'Fatal Tragedy' (Dream Theater) gaat van Em naar E°. Welk gebruik is dat?~Kleurverandering op dezelfde grondnoot~Moduleren een toon lager~Een tritonussubstitutie~Een backdoor progression~Dezelfde grondnoot, ander akkoordtype.
+ag~Hoe is een vermeerderd akkoord opgebouwd?~Grote tertsen (4 halve tonen) stapelen~Kleine tertsen stapelen~Grote en kleine terts afwisselend~Kwinten stapelen~Dit maakt het onstabiel en mysterieus.
+ag~Hoeveel verschillende vermeerderde akkoorden bestaan er?~4~3~6~12~C+ = E+ = G#+ enzovoort.
+ag~Waarvoor wordt het vermeerderd akkoord vaak gebruikt?~Als vervanging van V7~Als vervanging van de tonica~Als vervanging van IV~Om te moduleren naar mineur~Bv. het begin van 'Oh Darling' (The Beatles).
+ag~Is E+ een diatonisch akkoord in A majeur?~Nee, B# zit niet in A majeur~Ja, het is de V~Ja, het is de IV~Nee, omdat E+ een mineurakkoord is~De verhoogde kwint (B#) is niet diatonisch.
+ag~Welke stem beweegt chromatisch in een voice leading cadens met een vermeerderd akkoord?~De kwint~De grondnoot~De terts~De septiem~Bv. I → I+ → vi.
+ag~Welke karakterbeschrijving past bij een vermeerderd akkoord?~Onstabiel, mysterieus, sci-fi~Stabiel en warm~Droevig en donker~Plechtig en afsluitend~De klank is oncomfortabel en raadselachtig.
+cd~Wat is de bedrieglijke (deceptieve) cadens?~V → vi~V → I~IV → I~ii → V~In C: G → Am ('I Will Survive').
+cd~Wat is de plagale cadens?~IV → I~V → I~V → vi~ii → V~De 'Amen-cadens'.
+cd~Wat is de authentieke cadens?~V → I~IV → I~V → vi~I → IV~Dominant lost op naar de tonica.
+cd~Waarop eindigt een halve cadens?~Op V~Op I~Op IV~Op vi~Het is een open einde.
+cd~Welke cadens is Am – G – F – E?~Andalusische cadens (vi – V – IV – III)~Doowop-cadens~Pop-cadens~Magnolia-cadens~Afkomstig uit de flamenco ('Don't Cry').
+cd~Welke progressie is de pop-cadens?~I – V – vi – IV~I – vi – IV – V~I – ii – vi – IV~I – IV – V – IV~In C: C – G – Am – F ('Someone Like You').
+cd~Welke progressie hoort bij 'Stand By Me' (doowop)?~I – vi – IV – V~I – V – vi – IV~I – ii – vi – IV~I – VI – iii – V~In C: C – Am – F – G.
+cd~Welke progressie is de 'She Loves You'-cadens?~I – VI – iii – V~I – vi – IV – V~I – V – vi – IV~vi – V – IV – III~In G: G – E – Bm – D.
+cd~Welke progressie is de Halo-cadens?~I – ii – vi – IV~I – V – vi – IV~I – IV – V – IV~I – vi – IV – V~In C: C – Dm – Am – F.`.split('\n').map((l,i)=>{const p=l.split('~');return{t:p[0],id:'s'+i,q:p[1],r:p[2],w:p.slice(3,6),why:p[6]}});
+
+// ---- Gegenereerde vragen (steeds nieuwe variaties)
+const DG=[['C','Eb','Gb','A'],['Db','E','G','Bb'],['D','F','Ab','B']],AG=[['C','E','G#'],['C#','F','A'],['D','F#','A#'],['D#','G','B']];
+const eq=(t,g,s,n)=>{const x=pick(g)[0],[p,q]=pick(x,2);return Q(t,'g'+t,'Welk '+n+' akkoord klinkt hetzelfde als '+p+s+'?',q+s,g.filter(y=>y!==x).flat().map(y=>y+s),'Symmetrisch akkoord: '+x.join(s+' = ')+s+'.')};
+const IIV=[['Dm7 (2-)','Em7 – A7'],['Em7 (3-)','F#m7b5 – B7'],['Fmaj7 (4)','Gm7 – C7'],['G7 (5D)','Am7 – D7'],['Am7 (6-)','Bm7b5 – E7']];
+const G=[
+['sd',()=>{const k=pick(Object.keys(KS))[0],s=KS[k],d=pick([2,3,4,5,6])[0],r=s[(d+3)%7]+'7';return Q('sd','gsd','In '+k+' majeur: welk akkoord is de secundaire dominant van de '+d+'e graad ('+s[d-1]+')?',r,[2,3,4,5,6].filter(x=>x!=d).map(x=>s[(x+3)%7]+'7'),r+' ligt een kwint boven '+s[d-1]+' en lost er op naar op.')}],
+['bd',()=>{const k=pick(['C','G','D','A','F','Bb','Eb'])[0],i=N.indexOf(k);return Q('bd','gbd','Wat is het backdoor-akkoord (bVII7) in '+k+' majeur?',N[(i+10)%12]+'7',[7,11,5,9,1].map(x=>N[(i+x)%12]+'7'),'bVII7 ligt een hele toon onder '+k+' en lost daarnaar op.')}],
+['ts',()=>{const i=Math.random()*12|0,r=N[i];return Q('ts','gts','Wat is de tritonussubstitutie van '+r+'7?',N[(i+6)%12]+'7',[5,7,1,11,3].map(x=>N[(i+x)%12]+'7'),r+'7 en '+N[(i+6)%12]+'7 delen dezelfde tritonus (terts en septiem omgedraaid).')}],
+['ss',()=>{const [t,r]=pick(IIV)[0];return Q('ss','gss','In C majeur: welke II–V leidt naar '+t+'?',r,IIV.map(x=>x[1]),'Denk even in de toonaard van het doelakkoord: de V ligt een kwint hoger, de ii nog een kwint hoger.')}],
+['md',()=>{const k=pick(Object.keys(KS))[0],i=1+Math.random()*6|0,s=KS[k];return Q('md','gmd','Welke majeurtoonladder bevat dezelfde noten als '+s[i]+' '+MO[i]+'?',k+' majeur',Object.keys(KS).filter(x=>x!==k).map(x=>x+' majeur'),s[i]+' '+MO[i]+' begint op de '+(i+1)+'e graad van '+k+' majeur.')}],
+['md',()=>{const i=1+Math.random()*6|0;return Q('md','gmd2','Welke modus begint op de '+(i+1)+'e graad van de majeurtoonladder?',MO[i],MO.filter((_,j)=>j!==i),'De 7 modi: ionisch, dorisch, frygisch, lydisch, mixolydisch, aeolisch, locrisch.')}],
+['dm',()=>eq('dm',DG,'°','verminderd')],
+['ag',()=>eq('ag',AG,'+','vermeerderd')]
+];
+
+// ---- Audio (Web Audio, geen bestanden nodig)
+let AC,act=[];const mtof=m=>440*2**((m-69)/12);
+const ctx=()=>{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();return AC};
+function stop(){act.forEach(o=>{try{o.stop()}catch(e){}});act=[]}
+function osc(m,t0,d,v,ty,sus){const c=ctx(),o=c.createOscillator(),g=c.createGain(),e=t0+d;o.type=ty;o.frequency.value=mtof(m);g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(v,t0+(sus?.4:.03));if(sus){g.gain.setValueAtTime(v,e-.4);g.gain.linearRampToValueAtTime(0,e)}else g.gain.exponentialRampToValueAtTime(.001,e);o.connect(g).connect(c.destination);o.start(t0);o.stop(e+.05);act.push(o)}
+function play(ev,dur,dr){stop();const t=ctx().currentTime+.1;if(dr!=null){osc(dr,t,dur,.16,'sine',1);osc(dr,t,dur,.07,'triangle',1)}ev.forEach(([ms,a,d])=>ms.forEach(m=>osc(m,t+a,d,.2/Math.sqrt(ms.length),'triangle')))}
+const CT={M:[0,4,7],m:[0,3,7],7:[0,4,7,10],m7:[0,3,7,10],M7:[0,4,7,11],m7b5:[0,3,6,10],o7:[0,3,6,9],aug:[0,4,8],dim:[0,3,6]};
+const MI=[[0,2,4,5,7,9,11],[0,2,3,5,7,9,10],[0,1,3,5,7,8,10],[0,2,4,6,7,9,11],[0,2,4,5,7,9,10],[0,2,3,5,7,8,10],[0,1,3,5,6,8,10]];
+const MC=[[[0,'M'],[5,'M'],[7,'M'],[0,'M']],[[0,'m7'],[5,'7'],[0,'m7']],[[0,'m'],[1,'M'],[0,'m']],[[0,'M'],[2,'M'],[0,'M']],[[0,'M'],[10,'M'],[0,'M']],[[0,'m'],[8,'M'],[10,'M'],[0,'m']],[[0,'dim'],[1,'M'],[0,'dim']]];
+const sc=(r,iv)=>[iv.concat(12).map((x,i)=>[[r+12+x],i*.5,.6]),4.4];
+const ch=(r,l,dt=1.5)=>[l.map(([o,ty],i)=>[CT[ty].map(n=>r+12+o+n),i*dt,dt*.97]),l.length*dt+.3];
+const go=([ev,d],r,dr=1)=>()=>play(ev,d,dr?r-12:null);
+const base=()=>48+Math.random()*12|0;
+// modus: naam, akkoord, tensions, karakter, songs, karakternoot
+const MD=[['ionisch','Maj7','9, 13 (de 11 wordt #11)','helder, majeur','','geen verlaagde noten: helder en stabiel'],
+['dorisch','m7 (of m6)','9, 11, 13','hoopvol-triest, funky','So What (Miles Davis), Eleanor Rigby (Beatles), Scarborough Fair, Uptown Funk','b3 en b7 maar een gewone (grote) 6'],
+['frygisch','m7(b9)','b9, 11, b13','flamenco, donker, Egyptisch','White Rabbit (Jefferson Airplane), Wherever I May Roam (Metallica)','de b2, een halve toon boven de grondnoot'],
+['lydisch','Maj7(#11)','9, #11, 13','heroïsch, zwevend, speels','The Simpsons Theme, Back To The Future Theme, Freewill (Rush), Man on the Moon (R.E.M.)','de #4'],
+['mixolydisch','7','9, 13','rock, blues, funk','You Really Got Me (The Kinks), Sweet Home Alabama (Lynyrd Skynyrd), Norwegian Wood (Beatles)','de b7 bij een majeur terts'],
+['aeolisch','m7','9, 11, b13','droevig, natuurlijke mineur','Street Spirit (Radiohead), Ain’t No Sunshine (Bill Withers)','de b6 (samen met b3 en b7)'],
+['locrisch','m7b5','11, b13','heel donker, onstabiel','Army of Me (Björk)','de b5 (en de b2)']];
+G.push(
+['md',()=>{const x=pick(MD)[0];return Q('md','tmd1','Welke tensions horen bij de '+x[0]+' modus (chordscale)?',x[2],MD.map(y=>y[2]),x[0]+': akkoord '+x[1]+', tensions '+x[2]+'.')}],
+['md',()=>{const x=pick(MD)[0];return Q('md','tmd2','Welk akkoordtype hoort bij de '+x[0]+' modus?',x[1],MD.map(y=>y[1]),x[0]+' hoort bij '+x[1]+'.')}],
+['md',()=>{const x=pick(MD)[0];return Q('md','tmd3','Welke modus (chordscale) past bij een '+x[1]+'-akkoord?',x[0],MO.filter(y=>y!==x[0]),x[0]+': tensions '+x[2]+'.')}],
+['md',()=>{const x=pick(MD.slice(1))[0];return Q('md','tmd4','Wat is de karakternoot van de '+x[0]+' modus?',x[5],MD.slice(1).map(y=>y[5]),'Zoek bij het luisteren naar deze noot: '+x[5]+'.')}],
+['md',()=>{const x=pick(MD.filter(m=>m[4]))[0],s=pick(x[4].split(', '))[0];return Q('md','smd','Rond welke modus is "'+s+'" gebouwd?',x[0],MO,'"'+s+'" klinkt '+x[0]+' ('+x[3]+').')}]);
+// ---- Gehoorvragen: herkennen
+const modeEar=()=>{const i=Math.random()*7|0,r=base(),c=Math.random()<.5;return Q('md','e-md'+c,'🎧 Je hoort '+(c?'akkoorden':'een toonladder')+' boven een drone (de grondnoot). Welke modus is dit?',MO[i],MO.filter((_,j)=>j!=i),'Luister naar de karakternoot: '+MD[i][5]+'.',go(c?ch(r,MC[i]):sc(r,MI[i]),r),6)};
+const EP=(t,items,txt)=>()=>{const r=base(),x=pick(items)[0],l=x[1][0][0]?[[0,'M'],...x[1]]:x[1];return Q(t,'e-'+t,'🎧 '+txt,x[0],items.map(y=>y[0]),x[2],go(ch(r,l),r,0))};
+const BD=[['ii – V – I',[[2,'m7'],[7,'7'],[0,'M7']],'Gewone jazz cadens: het dominant staat op de 5e graad.'],['ivm7 – bVII7 – I (backdoor)',[[5,'m7'],[10,'7'],[0,'M7']],'bVII7 lost een hele toon lager op naar I.'],['IV – V – I',[[5,'M7'],[7,'7'],[0,'M7']],'Subdominant – dominant – tonica.'],['bVI – bVII7 – I (backdoor)',[[8,'M7'],[10,'7'],[0,'M7']],'bVII7 lost een hele toon lager op naar I.']];
+const SD=[['I – VI7 – ii – V (VI7 is secundaire dominant)',[[0,'M7'],[9,'7'],[2,'m7'],[7,'7']],'VI7 heeft een majeure terts en leidt naar ii.'],['I – vi – ii – V (alles diatonisch)',[[0,'M7'],[9,'m7'],[2,'m7'],[7,'7']],'Alle akkoorden komen uit de reeks.'],['I – III7 – vi – V (III7 is secundaire dominant)',[[0,'M7'],[4,'7'],[9,'m7'],[7,'7']],'III7 = 3D, leidt naar 6-.'],['I – iii – vi – V (alles diatonisch)',[[0,'M7'],[4,'m7'],[9,'m7'],[7,'7']],'Alle akkoorden komen uit de reeks.']];
+const SS=[['II–V naar de 2e graad (ii)',[[0,'M7'],[4,'m7'],[9,'7'],[2,'m7']],'3mi7 – 6D → 2-.'],['II–V naar de 4e graad (IV)',[[0,'M7'],[7,'m7'],[0,'7'],[5,'M7']],'5mi – 1D → 4.'],['II–V naar de 5e graad (V)',[[0,'M7'],[9,'m7'],[2,'7'],[7,'7']],'6mi – 2D → 5D.'],['II–V naar de 6e graad (vi)',[[0,'M7'],[11,'m7b5'],[4,'7'],[9,'m7']],'7mi7b5 – 3D → 6-.']];
+const TS=[['ii – V7 – I (gewone dominant)',[[2,'m7'],[7,'7'],[0,'M7']],'Basnoot gaat van D naar G naar C.'],['ii – subV7 – I (tritonussubstitutie)',[[2,'m7'],[1,'7'],[0,'M7']],'Chromatisch dalende baslijn D – Db – C.']];
+const CD1=[['I – V – vi – IV (pop-cadens)',[[0,'M'],[7,'M'],[9,'m'],[5,'M']],'De meest herkenbare pop-cadens.'],['I – vi – IV – V (doowop)',[[0,'M'],[9,'m'],[5,'M'],[7,'M']],'Doowop uit de jaren 50-60.'],['I – ii – vi – IV (Halo-cadens)',[[0,'M'],[2,'m'],[9,'m'],[5,'M']],'Dromerig en emotioneel.'],['I – VI – iii – V (She Loves You)',[[0,'M'],[9,'M'],[4,'m'],[7,'M']],'Het VI-akkoord is majeur (secundaire dominant).']];
+const CD2=[['Authentieke cadens (V → I)',[[7,'M'],[0,'M']],'Sterke afsluiting.'],['Plagale cadens (IV → I)',[[5,'M'],[0,'M']],'Zachte "Amen"-afsluiting.'],['Bedrieglijke cadens (V → vi)',[[7,'M'],[9,'m']],'Verrassing: geen I, maar vi.'],['Halve cadens (ii → V)',[[2,'m'],[7,'M']],'Open einde op V.']];
+const QL=[['Verminderd (dim7)','o7','Kleine tertsen op elkaar: spannend en onstabiel.'],['Vermeerderd','aug','Grote tertsen op elkaar: zwevend en mysterieus.'],['Dominant 7','7','Grote terts met kleine septiem.'],['Halfverminderd (m7b5)','m7b5','Kleine terts, b5 en kleine septiem.']];
+const EQ=(t,k)=>()=>{const r=base(),x=QL.find(y=>y[1]==k),iv=CT[k];return Q(t,'e-'+t,'🎧 Welk type akkoord hoor je? (eerst gebroken, dan samen)',x[0],QL.map(y=>y[0]),x[2],()=>play([...iv.map((n,i)=>[[r+12+n],i*.35,1.2]),[iv.map(n=>r+12+n),iv.length*.35+.1,2.2]],4.5,null))};
+const TN=[['9',14],['b9',13],['#9',15],['#11',18],['13',21],['b13',20]];
+const eTn=()=>{const r=base(),x=pick(TN)[0],iv=[0,4,7,10,x[1]];return Q('tn','e-tn','🎧 Een dominantakkoord met één tension. Welke tension hoor je? (eerst gebroken, dan samen)',x[0],TN.map(y=>y[0]),'De tension ligt '+x[1]+' halve tonen boven de grondnoot.',()=>play([...iv.map((n,i)=>[[r+12+n],i*.35,1.2]),[iv.map(n=>r+12+n),iv.length*.35+.1,2.4]],4.8,null),3)};
+const MM=[['majeur',[0,2,4,5,7,9,11],'Grote terts en grote sext.'],['natuurlijk mineur (aeolisch)',[0,2,3,5,7,8,10],'Kleine terts, sext en septiem.'],['harmonisch mineur',[0,2,3,5,7,8,11],'Let op de oosterse sprong van b6 naar 7.'],['melodisch mineur (opwaarts)',[0,2,3,5,7,9,11],'Enkel de terts is klein, de rest is majeur.']];
+const eMm=()=>{const r=base(),x=pick(MM)[0];return Q('mm','e-mm','🎧 Je hoort een toonladder boven een drone. Welke toonladder is het?',x[0],MM.map(y=>y[0]),x[2],go(sc(r,x[1]),r))};
+const TD=[[0,'M7','1'],[2,'m7','2-'],[4,'m7','3-'],[5,'M7','4'],[7,'7','5D'],[9,'m7','6-'],[11,'m7b5','7-b5']];
+const eTk=()=>{const r=base(),x=pick(TD.slice(1))[0];return Q('tk','e-tk','🎧 Je hoort eerst de tonica (1), daarna een ander akkoord van de tonale kaart. Welke graad is dat?',x[2],TD.map(y=>y[2]),'Dit is de '+x[2]+'-graad van de majeurreeks.',go(ch(r,[[0,'M7'],[x[0],x[1]]]),r,0))};
+G.push(['md',modeEar,1],['md',modeEar,1],['tk',eTk,1],['bd',EP('bd',BD,'Welke progressie hoor je? Je hoort eerst de tonica.'),1],['sd',EP('sd',SD,'Welke progressie hoor je? Let op de akkoorden die niet diatonisch zijn.'),1],['ss',EP('ss',SS,'Naar welk akkoord leidt de II–V die je hoort?'),1],['ts',EP('ts',TS,'Hoor je een gewone dominant of een tritonussubstitutie?'),1],['cd',EP('cd',CD1,'Welke 4-akkoordenprogressie hoor je?'),1],['cd',EP('cd',CD2,'Welke cadens hoor je? Je hoort eerst de tonica.'),1],['tn',eTn,1],['mm',eMm,1],['dm',EQ('dm','o7'),1],['ag',EQ('ag','aug'),1]);
+// ---- Luisterlab
+let labRoot=48;
+function lab(){stop();$.innerHTML=`<h2>🎧 Luisterlab: de modi</h2><p>Luister naar de karakternoot van elke modus. De grondnoot klinkt als drone, zodat je de kleur van de toonladder én van de akkoorden hoort. Grondnoot: <select id="lr">${N.map((n,i)=>`<option value="${i}" ${labRoot-48==i?'selected':''}>${n}</option>`).join('')}</select></p><div class="grid">${MD.map((m,i)=>`<div class="box"><b>${m[0]}</b> <small>· ${m[3]}</small><p>Karakternoot: ${m[5]}<br>Akkoord: ${m[1]} · Tensions: ${m[2]}${m[4]?'<br>Songs: '+m[4]:''}</p><button class="p" data-a="lsc" data-i="${i}">▶ Toonladder + drone</button><button data-a="lch" data-i="${i}">▶ Akkoorden + drone</button></div>`).join('')}</div><div class="row"><button data-a="home">Terug naar oefenen</button></div>`}
+
+// ---- Voortgang
+const K='mt2-voortgang';
+let st={t:{},q:{}};try{st=JSON.parse(localStorage.getItem(K))||st}catch(e){}
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(st))}catch(e){}};
+const acc=t=>{const s=st.t[t];return s&&s.n?s.ok/s.n:null};
+let sel=new Set(Object.keys(T)),cnt=10,ses=null,kind='all';
+const $=document.getElementById('app');
+
+function home(){stop();
+  const seen=Object.keys(T).filter(t=>acc(t)!==null).sort((a,b)=>acc(a)-acc(b)).slice(0,3).filter(t=>acc(t)<.8);
+  $.innerHTML=`<h2>Wat wil je oefenen?</h2><div class="grid">${Object.entries(T).map(([t,[n,e]])=>{const a=acc(t),s=st.t[t];return`<label class="t"><input type="checkbox" data-t="${t}" ${sel.has(t)?'checked':''}><b>${e} ${n}</b><div class="bar"><span style="width:${a===null?0:Math.round(a*100)}%"></span></div><small>${a===null?'Nog niet geoefend':Math.round(a*100)+'% juist · '+s.n+' vragen'}</small></label>`}).join('')}</div>
+  <div class="row"><button class="lnk" data-a="all">Alles kiezen</button><button class="lnk" data-a="none">Niets kiezen</button><span style="flex:1"></span>Soort:${[['all','Alles'],['ear','🎧 Luisteren'],['theory','Theorie']].map(([k,n])=>`<button class="c ${kind==k?'on':''}" data-k="${k}">${n}</button>`).join('')} · Aantal:${[10,20,30].map(n=>`<button class="c ${cnt==n?'on':''}" data-n="${n}">${n}</button>`).join('')}</div>
+  <div class="row"><button class="p" data-a="go" ${sel.size?'':'disabled'}>Start oefenen</button><button class="w" data-a="weak" ${sel.size?'':'disabled'}>Train mijn zwaktes</button><button data-a="lab">🎧 Luisterlab: modi</button></div>
+  <p style="color:var(--mut)">${seen.length?'Je zwakste onderwerpen nu: <b>'+seen.map(t=>T[t][0]).join(', ')+'</b>. De knop "Train mijn zwaktes" geeft die vaker, samen met vragen die je eerder fout had.':'Oefen eerst een paar vragen. Daarna kan het platform je zwakke punten herkennen en gericht laten herhalen.'}</p>
+  <button class="lnk" data-a="reset">Mijn voortgang wissen</button>`}
+
+function build(weak){
+  let f=[];
+  S.forEach(q=>sel.has(q.t)&&kind!='ear'&&f.push({t:q.t,id:q.id,mk:()=>Q(q.t,q.id,q.q,q.r,q.w,q.why)}));
+  G.forEach(([t,fn,e],i)=>sel.has(t)&&(kind=='all'||(kind=='ear')==!!e)&&[0,1,2].forEach(()=>f.push({t,id:'g'+i,mk:fn})));
+  const w=x=>weak?(1+5*(1-((st.t[x.t]?.ok||0)+1)/((st.t[x.t]?.n||0)+2)))*(1+2*(st.q[x.id]||0)):1;
+  const out=[];
+  while(out.length<cnt&&f.length){let r=Math.random()*f.reduce((s,x)=>s+w(x),0),i=0;for(;i<f.length-1;i++){r-=w(f[i]);if(r<=0)break}out.push(f.splice(i,1)[0].mk())}
+  return out}
+
+function start(weak){ses={weak,qs:build(weak),i:0,log:[],done:false};if(!ses.qs.length){alert('Geen vragen voor deze keuze. Kies een onderwerp of een andere soort.');return}quiz()}
+function quiz(){
+  const q=ses.qs[ses.i],L=ses.log;
+  $.innerHTML=`<div class="prog">${ses.qs.map((_,i)=>`<i class="${i<L.length?(L[i].ok?'d':'x'):i==ses.i?'n':''}"></i>`).join('')}</div>
+  <div class="box"><span class="tag">${T[q.t][1]} ${T[q.t][0]} · vraag ${ses.i+1} van ${ses.qs.length}</span><p class="q">${q.q}</p>${q.snd?'<p><button class="p" data-a="snd">🎧 Beluister (opnieuw)</button></p>':''}
+  <div id="opts">${q.o.map((o,i)=>`<button class="o" data-o="${i}">${o}</button>`).join('')}</div><div id="fb"></div></div>`;if(q.snd)setTimeout(q.snd,250)}
+function answer(i){
+  const q=ses.qs[ses.i];if(ses.done)return;ses.done=true;const ok=i==q.a;
+  ses.log.push({t:q.t,ok});
+  const s=st.t[q.t]=st.t[q.t]||{n:0,ok:0};s.n++;if(ok)s.ok++;
+  st.q[q.id]=Math.max(0,(st.q[q.id]||0)+(ok?-1:1));save();
+  document.querySelectorAll('.o').forEach((b,j)=>{b.disabled=true;if(j==q.a)b.classList.add('ok');else if(j==i)b.classList.add('no')});
+  const last=ses.i==ses.qs.length-1;
+  document.getElementById('fb').innerHTML=`<div class="fb ${ok?'ok':'no'}"><b>${ok?'Juist!':'Niet juist.'}</b> ${ok?'':'Het juiste antwoord is: <b>'+q.o[q.a]+'</b>. '}${q.why||''}</div><div class="row"><button class="p" data-a="next" id="nx">${last?'Bekijk resultaat':'Volgende vraag'}</button></div>`;
+  document.getElementById('nx').focus()}
+function next(){stop();ses.done=false;ses.i++;ses.i>=ses.qs.length?result():quiz()}
+function result(){
+  const L=ses.log,ok=L.filter(x=>x.ok).length,by={};
+  L.forEach(x=>{(by[x.t]=by[x.t]||{n:0,ok:0}).n++;if(x.ok)by[x.t].ok++});
+  const p=Math.round(100*ok/L.length);
+  $.innerHTML=`<div class="box"><p class="score">${ok} / ${L.length}</p><p>${p>=80?'Sterk gedaan! Dit zit er goed in.':p>=50?'Goed bezig. Met nog wat oefening zit je er.':'Dit mag nog groeien. Probeer "Train mijn zwaktes" om gericht te herhalen.'}</p>
+  <h2>Per onderwerp</h2>${Object.entries(by).map(([t,s])=>`<div class="rt"><span>${T[t][1]} ${T[t][0]}</span><div class="bar"><span style="width:${100*s.ok/s.n}%"></span></div><b>${s.ok}/${s.n}</b></div>`).join('')}
+  <div class="row"><button class="p" data-a="again">Nog een ronde</button><button class="w" data-a="weak">Train mijn zwaktes</button><button data-a="home">Ander onderwerp kiezen</button></div></div>`}
+
+$.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.o!==undefined)return answer(+b.dataset.o);
+  if(b.dataset.k){kind=b.dataset.k;return home()}
+  if(b.dataset.n){cnt=+b.dataset.n;return home()}
+  const a=b.dataset.a;
+  if(a=='all'){sel=new Set(Object.keys(T));home()}
+  else if(a=='none'){sel=new Set();home()}
+  else if(a=='go')start(false);
+  else if(a=='weak')start(true);
+  else if(a=='again')start(ses.weak);
+  else if(a=='next')next();
+  else if(a=='lab')lab();
+  else if(a=='lsc')go(sc(labRoot,MI[+b.dataset.i]),labRoot)();
+  else if(a=='lch')go(ch(labRoot,MC[+b.dataset.i]),labRoot)();
+  else if(a=='snd')ses.qs[ses.i].snd();
+  else if(a=='home')home();
+  else if(a=='reset'&&confirm('Weet je zeker dat je je voortgang wilt wissen?')){st={t:{},q:{}};save();home()}});
+$.addEventListener('change',e=>{if(e.target.id=='lr'){labRoot=48+ +e.target.value;return}const t=e.target.dataset.t;if(t){e.target.checked?sel.add(t):sel.delete(t);home();const el=$.querySelector('[data-t="'+t+'"]');el&&el.focus()}});
+document.addEventListener('keydown',e=>{
+  if(!ses||!document.getElementById('opts'))return;
+  const n=+e.key;if(n>=1&&n<=4&&!ses.done&&ses.qs[ses.i].o[n-1]!==undefined)answer(n-1)});
+// pianotoetsen in de koptekst
+document.getElementById('keys').innerHTML=[1,2,4,5,6,8,9,11,12,13,15,16,18,19].map(k=>`<i style="left:${(k*100/21-1.2).toFixed(2)}%"></i>`).join('');
+home();
+</script>
+</body>
+</html>
